@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>리그 순위 보기</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 추가적인 스타일 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      margin: 20px auto;
+      width: 90%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .no-data {
+      text-align: center;
+      color: #888;
+      font-size: 16px;
+      margin: 20px;
+    }
+  </style>
+  <script>
+    // 리그 순위 로드
+    async function loadRankings() {
+      try {
+        const response = await fetch('/viewRankings?timestamp=' + new Date().getTime());
+        if (!response.ok) {
+          throw new Error('Failed to fetch rankings');
+        }
+
+        const rankings = await response.json();
+
+        const table = document.getElementById('rankingsTable');
+        table.innerHTML = `
+          <tr>
+              <th>순위</th>
+              <th>팀 이름</th>
+              <th>리그 이름</th>
+              <th>승점</th>
+              <th>승리</th>
+              <th>무승부</th>
+              <th>패배</th>
+              <th>총 득점</th>
+              <th>총 실점</th>
+          </tr>
+        `;
+
+        if (rankings.length === 0) {
+          table.innerHTML += `
+            <tr>
+              <td colspan="9" class="no-data">리그 순위 데이터가 없습니다.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        rankings.forEach((ranking, index) => {
+          table.innerHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${ranking.teamName}</td>
+                <td>${ranking.leagueName}</td>
+                <td>${ranking.points}</td>
+                <td>${ranking.wins}</td>
+                <td>${ranking.draws}</td>
+                <td>${ranking.losses}</td>
+                <td>${ranking.goalsFor}</td>
+                <td>${ranking.goalsAgainist}</td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        alert('데이터를 불러오는 중 문제가 발생했습니다.');
+      }
+    }
+
+    // 페이지 로드 시 리그 순위 로드
+    window.onload = loadRankings;
+  </script>
+</head>
+<body>
+<header>
+  <h1>리그 순위 보기</h1>
+</header>
+<main>
+  <table id="rankingsTable" border="1"></table>
+</main>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>경기 세부 정보 추가</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 경기 세부 정보 추가 전용 스타일 */
+    form {
+      margin: 0 auto;
+      max-width: 500px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    async function loadMatches() {
+      const response = await fetch('/getMatches');
+      const matches = await response.json();
+
+      const matchSelect = document.getElementById('matchID');
+      matchSelect.innerHTML = '<option value="" disabled selected>경기를 선택하세요</option>';
+      matches.forEach(match => {
+        const option = document.createElement('option');
+        option.value = match.matchID;
+        option.textContent = match.matchInfo;
+        matchSelect.appendChild(option);
+      });
+    }
+
+    async function loadPlayers() {
+      const response = await fetch('/getPlayers');
+      const players = await response.json();
+
+      const playerSelect = document.getElementById('playerID');
+      playerSelect.innerHTML = '<option value="" disabled selected>선수를 선택하세요</option>';
+      players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.playerID;
+        option.textContent = `${player.playerName} (ID: ${player.playerID})`;
+        playerSelect.appendChild(option);
+      });
+    }
+
+    async function addMatchDetail() {
+      const matchID = document.getElementById('matchID').value;
+      const playerID = document.getElementById('playerID').value;
+      const actionType = document.getElementById('actionType').value;
+      const actionTime = document.getElementById('actionTime').value;
+
+      if (!matchID || !playerID) {
+        alert('경기와 선수를 선택하세요!');
+        return;
+      }
+
+      try {
+        const response = await fetch('/addMatchDetail', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ matchID, playerID, actionType, actionTime })
+        });
+
+        if (!response.ok) {
+          throw new Error('경기 세부 정보 추가에 실패했습니다.');
+        }
+
+        const result = await response.text();
+        alert(result);
+
+        // 입력 초기화
+        document.getElementById('matchID').value = '';
+        document.getElementById('playerID').value = '';
+        document.getElementById('actionType').value = 'goal';
+        document.getElementById('actionTime').value = '';
+      } catch (error) {
+        console.error(error);
+        alert('경기 세부 정보 추가 중 오류가 발생했습니다.');
+      }
+    }
+
+    window.onload = () => {
+      loadMatches();
+      loadPlayers();
+    };
+  </script>
+</head>
+<body>
+<header>경기 세부 정보 추가</header>
+<main>
+  <h2 class="page-title">경기 세부 정보 추가</h2>
+  <form onsubmit="event.preventDefault(); addMatchDetail();">
+    <label for="matchID">경기 선택:</label>
+    <select id="matchID" required></select>
+
+    <label for="playerID">선수 선택:</label>
+    <select id="playerID" required></select>
+
+    <label for="actionType">행동 유형:</label>
+    <select id="actionType">
+      <option value="goal">골</option>
+      <option value="assist">어시스트</option>
+      <option value="yellowcard">옐로카드</option>
+      <option value="redcard">레드카드</option>
+    </select>
+
+    <label for="actionTime">행동 시간 (분):</label>
+    <input type="number" id="actionTime" required>
+
+    <button type="submit">추가</button>
+  </form>
+</main>
+<footer>© 2024 Soccer Project</footer>
+</body>
+</html>

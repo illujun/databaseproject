@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>경기 정보</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 경기 정보 전용 스타일 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      margin: 20px auto;
+      width: 90%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+  <script>
+    async function loadMatches() {
+      try {
+        const response = await fetch('/getMatchesDetailed');
+        if (!response.ok) throw new Error('Failed to fetch match data');
+
+        const matches = await response.json();
+
+        const table = document.getElementById('matchTable');
+        table.innerHTML = `
+          <tr>
+            <th>경기 ID</th>
+            <th>홈팀</th>
+            <th>원정팀</th>
+            <th>경기 날짜</th>
+            <th>홈팀 점수</th>
+            <th>원정팀 점수</th>
+            <th>관중 수</th>
+          </tr>
+        `;
+
+        matches.forEach(match => {
+          table.innerHTML += `
+            <tr>
+              <td>${match.matchID}</td>
+              <td>${match.homeTeam}</td>
+              <td>${match.awayTeam}</td>
+              <td>${match.matchDate}</td>
+              <td>${match.homeScore}</td>
+              <td>${match.awayScore}</td>
+              <td>${match.attendance}</td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        console.error(error);
+        alert('경기 데이터를 불러오는 중 오류가 발생했습니다.');
+      }
+    }
+
+    window.onload = loadMatches;
+  </script>
+</head>
+<body>
+<header>
+  <h1>경기 정보 보기</h1>
+</header>
+<main>
+  <table id="matchTable"></table>
+</main>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>선수 정보 보기</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 추가적인 스타일 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-size: 16px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    select, button {
+      font-size: 16px;
+      padding: 5px 10px;
+      margin: 10px 0;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      margin: 20px auto;
+      width: 80%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .no-data {
+      text-align: center;
+      color: #888;
+      font-size: 16px;
+      margin: 20px;
+    }
+  </style>
+  <script>
+    async function loadPlayerDetails() {
+      const playerID = document.getElementById('playerID').value;
+
+      if (!playerID) {
+        alert('선수를 선택하세요.');
+        return;
+      }
+
+      try {
+        // 캐싱 방지를 위해 타임스탬프 추가
+        const response = await fetch(`/viewPlayerDetails?playerID=${playerID}&timestamp=${new Date().getTime()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch player details');
+        }
+
+        const playerDetails = await response.json();
+
+        if (playerDetails.length === 0) {
+          document.getElementById('playerDetailsTable').innerHTML = '<div class="no-data">선택한 선수의 데이터가 없습니다.</div>';
+          return;
+        }
+
+        const table = document.getElementById('playerDetailsTable');
+        table.innerHTML = `
+          <tr>
+              <th>선수 이름</th>
+              <th>골</th>
+              <th>어시스트</th>
+              <th>옐로카드</th>
+              <th>레드카드</th>
+          </tr>
+        `;
+
+        playerDetails.forEach(detail => {
+          table.innerHTML += `
+            <tr>
+                <td>${detail.playerName}</td>
+                <td>${detail.goals}</td>
+                <td>${detail.assists}</td>
+                <td>${detail.yellowcard}</td>
+                <td>${detail.redcard}</td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        alert('데이터를 불러오는 중 문제가 발생했습니다.');
+      }
+    }
+
+    async function loadPlayers() {
+      try {
+        const response = await fetch('/getPlayers?timestamp=' + new Date().getTime());
+        if (!response.ok) {
+          throw new Error('Failed to fetch player list');
+        }
+
+        const players = await response.json();
+
+        const playerSelect = document.getElementById('playerID');
+        playerSelect.innerHTML = '<option value="" disabled selected>선수를 선택하세요</option>';
+        players.forEach(player => {
+          const option = document.createElement('option');
+          option.value = player.playerID;
+          option.textContent = player.playerName;
+          playerSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        alert('선수 목록을 불러오는 중 문제가 발생했습니다.');
+      }
+    }
+
+    // 페이지 로드 시 선수 목록 불러오기
+    window.onload = loadPlayers;
+  </script>
+</head>
+<body>
+<header>
+  <h1>선수 정보 보기</h1>
+</header>
+<main>
+  <div style="text-align: center;">
+    <label for="playerID">선수 선택:</label>
+    <select id="playerID"></select>
+    <button onclick="loadPlayerDetails()">검색</button>
+  </div>
+  <table id="playerDetailsTable"></table>
+</main>
+</body>
+</html>

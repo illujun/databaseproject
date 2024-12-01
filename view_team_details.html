@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>팀 세부 정보 보기</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 추가적인 스타일 */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    select {
+      padding: 5px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 5px 10px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      text-align: center;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .no-data {
+      text-align: center;
+      color: #888;
+      font-size: 16px;
+    }
+  </style>
+  <script>
+    async function loadTeamDetails() {
+      const teamID = document.getElementById('teamSelect').value;
+
+      if (!teamID) {
+        alert('팀을 선택하세요.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/viewTeamDetails?teamID=${teamID}&timestamp=${new Date().getTime()}`);
+        if (!response.ok) {
+          throw new Error('팀 정보를 가져오지 못했습니다.');
+        }
+
+        const teamDetails = await response.json();
+
+        const table = document.getElementById('teamDetailsTable');
+        table.innerHTML = `
+          <tr>
+              <th>팀 이름</th>
+              <th>승리</th>
+              <th>무승부</th>
+              <th>패배</th>
+              <th>총 득점</th>
+              <th>총 실점</th>
+              <th>승점</th>
+          </tr>
+        `;
+
+        if (teamDetails.length === 0) {
+          table.innerHTML += `
+            <tr>
+              <td colspan="7" class="no-data">선택한 팀의 데이터가 없습니다.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        teamDetails.forEach(detail => {
+          table.innerHTML += `
+            <tr>
+                <td>${detail.teamName}</td>
+                <td>${detail.wins}</td>
+                <td>${detail.draws}</td>
+                <td>${detail.losses}</td>
+                <td>${detail.goalsFor}</td>
+                <td>${detail.goalsAgainist}</td>
+                <td>${detail.points}</td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        alert('데이터를 불러오는 중 문제가 발생했습니다.');
+      }
+    }
+
+    async function loadTeams() {
+      try {
+        const response = await fetch('/getTeams?timestamp=' + new Date().getTime());
+        if (!response.ok) {
+          throw new Error('팀 목록을 가져오지 못했습니다.');
+        }
+
+        const teams = await response.json();
+
+        const teamSelect = document.getElementById('teamSelect');
+        teamSelect.innerHTML = '<option value="" disabled selected>팀을 선택하세요</option>';
+        teams.forEach(team => {
+          const option = document.createElement('option');
+          option.value = team.teamID;
+          option.textContent = team.teamName;
+          teamSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        alert('팀 목록을 불러오는 중 문제가 발생했습니다.');
+      }
+    }
+
+    window.onload = loadTeams;
+  </script>
+</head>
+<body>
+<header>
+  <h1>팀 세부 정보 보기</h1>
+</header>
+<main>
+  <label for="teamSelect">팀 선택:</label>
+  <select id="teamSelect"></select>
+  <button onclick="loadTeamDetails()">검색</button>
+  <table id="teamDetailsTable"></table>
+</main>
+</body>
+</html>

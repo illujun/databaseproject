@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>팀 추가</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 팀 추가 전용 스타일 */
+    form {
+      margin: 0 auto;
+      max-width: 500px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    async function loadLeagues() {
+      const response = await fetch('/getLeagues');
+      const leagues = await response.json();
+
+      const leagueSelect = document.getElementById('leagueID');
+      leagueSelect.innerHTML = '<option value="" disabled selected>리그를 선택하세요</option>';
+      leagues.forEach(league => {
+        const option = document.createElement('option');
+        option.value = league.leagueID;
+        option.textContent = `${league.leagueName} (ID: ${league.leagueID})`;
+        leagueSelect.appendChild(option);
+      });
+    }
+
+    async function loadStadiums() {
+      const response = await fetch('/getStadiums');
+      const stadiums = await response.json();
+
+      const stadiumSelect = document.getElementById('stadiumID');
+      stadiumSelect.innerHTML = '<option value="" disabled selected>스타디움을 선택하세요</option>';
+      stadiums.forEach(stadium => {
+        const option = document.createElement('option');
+        option.value = stadium.stadiumID;
+        option.textContent = `${stadium.stadiumName} (ID: ${stadium.stadiumID})`;
+        stadiumSelect.appendChild(option);
+      });
+    }
+
+    async function addTeam() {
+      const leagueID = document.getElementById('leagueID').value;
+      const stadiumID = document.getElementById('stadiumID').value;
+      const manager = document.getElementById('manager').value;
+      const teamName = document.getElementById('teamName').value;
+      const founded = document.getElementById('founded').value;
+
+      if (!leagueID || !stadiumID) {
+        alert('리그와 스타디움을 선택하세요!');
+        return;
+      }
+
+      try {
+        const response = await fetch('/addTeam', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ leagueID, stadiumID, manager, teamName, founded })
+        });
+
+        if (!response.ok) {
+          throw new Error('팀 추가에 실패했습니다.');
+        }
+
+        const result = await response.text();
+        alert(result);
+
+        // 입력 초기화
+        document.getElementById('leagueID').value = '';
+        document.getElementById('stadiumID').value = '';
+        document.getElementById('manager').value = '';
+        document.getElementById('teamName').value = '';
+        document.getElementById('founded').value = '';
+      } catch (error) {
+        console.error(error);
+        alert('팀 추가 중 오류가 발생했습니다.');
+      }
+    }
+
+    window.onload = () => {
+      loadLeagues();
+      loadStadiums();
+    };
+  </script>
+</head>
+<body>
+<header>팀 추가</header>
+<main>
+  <h2 class="page-title">팀 추가</h2>
+  <form onsubmit="event.preventDefault(); addTeam();">
+    <label for="leagueID">리그 선택:</label>
+    <select id="leagueID" required></select>
+
+    <label for="stadiumID">스타디움 선택:</label>
+    <select id="stadiumID" required></select>
+
+    <label for="manager">감독 이름:</label>
+    <input type="text" id="manager">
+
+    <label for="teamName">팀 이름:</label>
+    <input type="text" id="teamName" required>
+
+    <label for="founded">창단 연도:</label>
+    <input type="date" id="founded">
+
+    <button type="submit">추가</button>
+  </form>
+</main>
+<footer>© 2024 Soccer Project</footer>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>경기 추가</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 경기 추가 전용 스타일 */
+    form {
+      margin: 0 auto;
+      max-width: 500px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    async function loadStadiums() {
+      const response = await fetch('/getStadiums');
+      const stadiums = await response.json();
+
+      const stadiumSelect = document.getElementById('stadiumID');
+      stadiumSelect.innerHTML = '<option value="" disabled selected>경기장을 선택하세요</option>';
+      stadiums.forEach(stadium => {
+        const option = document.createElement('option');
+        option.value = stadium.stadiumID;
+        option.textContent = `${stadium.stadiumName} (ID: ${stadium.stadiumID})`;
+        stadiumSelect.appendChild(option);
+      });
+    }
+
+    async function loadTeams() {
+      const response = await fetch('/getTeams');
+      const teams = await response.json();
+
+      const homeSelect = document.getElementById('homeTeamID');
+      const awaySelect = document.getElementById('awayTeamID');
+      homeSelect.innerHTML = '<option value="" disabled selected>홈팀을 선택하세요</option>';
+      awaySelect.innerHTML = '<option value="" disabled selected>원정팀을 선택하세요</option>';
+      teams.forEach(team => {
+        const option1 = document.createElement('option');
+        option1.value = team.teamID;
+        option1.textContent = `${team.teamName} (ID: ${team.teamID})`;
+
+        const option2 = option1.cloneNode(true); // 원정팀에 동일한 옵션 복사
+        homeSelect.appendChild(option1);
+        awaySelect.appendChild(option2);
+      });
+    }
+
+    async function addMatch() {
+      const stadiumID = document.getElementById('stadiumID').value;
+      const homeTeamID = document.getElementById('homeTeamID').value;
+      const awayTeamID = document.getElementById('awayTeamID').value;
+      const matchDate = document.getElementById('matchDate').value;
+      const homeScore = document.getElementById('homeScore').value;
+      const awayScore = document.getElementById('awayScore').value;
+      const attendance = document.getElementById('attendance').value;
+
+      if (!stadiumID || !homeTeamID || !awayTeamID) {
+        alert('모든 필드를 채워주세요!');
+        return;
+      }
+
+      try {
+        const response = await fetch('/addMatch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ stadiumID, homeTeamID, awayTeamID, matchDate, homeScore, awayScore, attendance })
+        });
+
+        if (!response.ok) {
+          throw new Error('경기 추가에 실패했습니다.');
+        }
+
+        const result = await response.text();
+        alert(result);
+
+        // 입력 초기화
+        document.getElementById('stadiumID').value = '';
+        document.getElementById('homeTeamID').value = '';
+        document.getElementById('awayTeamID').value = '';
+        document.getElementById('matchDate').value = '';
+        document.getElementById('homeScore').value = '';
+        document.getElementById('awayScore').value = '';
+        document.getElementById('attendance').value = '';
+      } catch (error) {
+        console.error(error);
+        alert('경기 추가 중 오류가 발생했습니다.');
+      }
+    }
+
+    window.onload = () => {
+      loadStadiums();
+      loadTeams();
+    };
+  </script>
+</head>
+<body>
+<header>경기 추가</header>
+<main>
+  <h2 class="page-title">경기 추가</h2>
+  <form onsubmit="event.preventDefault(); addMatch();">
+    <label for="stadiumID">경기장 선택:</label>
+    <select id="stadiumID" required></select>
+
+    <label for="homeTeamID">홈팀 선택:</label>
+    <select id="homeTeamID" required></select>
+
+    <label for="awayTeamID">원정팀 선택:</label>
+    <select id="awayTeamID" required></select>
+
+    <label for="matchDate">경기 날짜:</label>
+    <input type="date" id="matchDate" required>
+
+    <label for="homeScore">홈팀 점수:</label>
+    <input type="number" id="homeScore">
+
+    <label for="awayScore">원정팀 점수:</label>
+    <input type="number" id="awayScore">
+
+    <label for="attendance">관중 수:</label>
+    <input type="number" id="attendance">
+
+    <button type="submit">경기 추가</button>
+  </form>
+</main>
+<footer>© 2024 Soccer Project</footer>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>선수 추가</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 선수 추가 전용 스타일 */
+    form {
+      margin: 0 auto;
+      max-width: 500px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    async function loadTeams() {
+      const response = await fetch('/getTeams');
+      const teams = await response.json();
+
+      const teamSelect = document.getElementById('teamID');
+      teamSelect.innerHTML = '<option value="" disabled selected>팀을 선택하세요</option>';
+      teams.forEach(team => {
+        const option = document.createElement('option');
+        option.value = team.teamID;
+        option.textContent = `${team.teamName} (ID: ${team.teamID})`;
+        teamSelect.appendChild(option);
+      });
+    }
+
+    async function addPlayer() {
+      const teamID = document.getElementById('teamID').value;
+      const playerName = document.getElementById('playerName').value;
+      const birth = document.getElementById('birth').value;
+      const nation = document.getElementById('nation').value;
+      const position = document.getElementById('position').value;
+
+      if (!teamID) {
+        alert('팀을 선택하세요!');
+        return;
+      }
+
+      try {
+        const response = await fetch('/addPlayer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ teamID, playerName, birth, nation, position })
+        });
+
+        if (!response.ok) {
+          throw new Error('선수 추가에 실패했습니다.');
+        }
+
+        const result = await response.text();
+        alert(result);
+
+        // 입력 초기화
+        document.getElementById('teamID').value = '';
+        document.getElementById('playerName').value = '';
+        document.getElementById('birth').value = '';
+        document.getElementById('nation').value = '';
+        document.getElementById('position').value = '';
+      } catch (error) {
+        console.error(error);
+        alert('선수 추가 중 오류가 발생했습니다.');
+      }
+    }
+
+    window.onload = loadTeams;
+  </script>
+</head>
+<body>
+<header>선수 추가</header>
+<main>
+  <h2 class="page-title">선수 추가</h2>
+  <form onsubmit="event.preventDefault(); addPlayer();">
+    <label for="teamID">팀 선택:</label>
+    <select id="teamID" required></select>
+
+    <label for="playerName">선수 이름:</label>
+    <input type="text" id="playerName" required>
+
+    <label for="birth">생년월일:</label>
+    <input type="date" id="birth">
+
+    <label for="nation">국적:</label>
+    <input type="text" id="nation">
+
+    <label for="position">포지션:</label>
+    <input type="text" id="position">
+
+    <button type="submit">추가</button>
+  </form>
+</main>
+<footer>© 2024 Soccer Project</footer>
+</body>
+</html>

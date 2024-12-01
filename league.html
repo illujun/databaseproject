@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>리그 추가</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* 리그 추가 전용 스타일 */
+    form {
+      margin: 0 auto;
+      max-width: 400px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    async function addLeague() {
+      const leagueName = document.getElementById('leagueName').value;
+      const country = document.getElementById('country').value;
+
+      try {
+        const response = await fetch('/addLeague', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ leagueName, country })
+        });
+
+        if (!response.ok) {
+          throw new Error('리그 추가에 실패했습니다.');
+        }
+
+        const result = await response.text();
+        alert(result);
+        document.getElementById('leagueName').value = '';
+        document.getElementById('country').value = '';
+      } catch (error) {
+        console.error(error);
+        alert('리그 추가 중 오류가 발생했습니다.');
+      }
+    }
+  </script>
+</head>
+<body>
+<header>리그 추가</header>
+<main>
+  <h2 class="page-title">리그 추가</h2>
+  <form onsubmit="event.preventDefault(); addLeague();">
+    <label for="leagueName">리그 이름:</label>
+    <input type="text" id="leagueName" placeholder="리그 이름 입력" required>
+    <label for="country">국가:</label>
+    <input type="text" id="country" placeholder="국가 입력" required>
+    <button type="submit">추가</button>
+  </form>
+</main>
+<footer>© 2024 Soccer Project</footer>
+</body>
+</html>

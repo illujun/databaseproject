@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="Soccer_database_project">
+    <output-path>$USER_HOME$/OneDrive/바탕 화면/3-2 필기모음/데베설</output-path>
+    <root id="archive" name="Soccer_database_project.war" />
+  </artifact>
+</component>
